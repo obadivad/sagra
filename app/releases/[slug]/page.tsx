@@ -1,0 +1,302 @@
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { Button } from "@/components/ui/button";
+import { SiteHeader } from "@/components/site-header";
+import { Badge } from "@/components/ui/badge";
+import { MusicPlayer } from "@/components/music-player";
+import { ArrowLeft, Play } from "lucide-react";
+
+interface ReleaseDetailPageProps {
+  params: {
+    slug: string;
+  };
+}
+
+export default async function ReleaseDetailPage({
+  params,
+}: ReleaseDetailPageProps) {
+  const supabase = createServerSupabaseClient();
+
+  // Fetch release data
+  const { data: release } = await supabase
+    .from("releases")
+    .select(
+      `
+      *,
+      artists:artist_releases(
+        id:artists(id),
+        name:artists(name),
+        slug:artists(slug)
+      )
+    `
+    )
+    .eq("slug", params.slug)
+    .single();
+
+  if (!release) {
+    notFound();
+  }
+
+  // Fetch tracks for this release - replace the sample tracks
+  const { data: releaseTracks } = await supabase
+    .from("tracks")
+    .select("*")
+    .eq("release_id", release.id)
+    .order("track_number", { ascending: true });
+
+  // Map database tracks to the format expected by MusicPlayer component
+  // If no tracks are found, provide empty array
+  const tracks = releaseTracks
+    ? releaseTracks.map((track) => ({
+        id: track.id,
+        title: track.title,
+        artist:
+          track.artist_name ||
+          release.artists?.[0]?.name?.name ||
+          "Unknown Artist",
+        duration: track.duration || 0,
+        audioUrl: track.audio_url || "",
+      }))
+    : [];
+
+  // Fallback to sample tracks if no tracks are available in the database
+  const sampleTracks = [
+    {
+      id: "1",
+      title: "Track 1",
+      artist: "Artist Name",
+      duration: 180,
+      audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3",
+    },
+    {
+      id: "2",
+      title: "Track 2",
+      artist: "Artist Name",
+      duration: 240,
+      audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3",
+    },
+    {
+      id: "3",
+      title: "Track 3",
+      artist: "Artist Name",
+      duration: 210,
+      audioUrl: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3",
+    },
+  ];
+
+  // Use actual tracks if available, otherwise fall back to sample tracks
+  const playerTracks = tracks.length > 0 ? tracks : sampleTracks;
+
+  return (
+    <div className="flex flex-col min-h-screen bg-turquoise text-foreground">
+      <SiteHeader />
+
+      <main className="flex-1">
+        <div className="container py-12">
+          <Button
+            variant="ghost"
+            size="sm"
+            asChild
+            className="mb-8 text-primary hover:bg-primary/10"
+          >
+            <Link href="/releases">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Releases
+            </Link>
+          </Button>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div className="relative aspect-square">
+              <Image
+                src={
+                  release.cover_url || "/placeholder.svg?height=600&width=600"
+                }
+                alt={release.title}
+                fill
+                className="object-cover rounded-lg"
+                priority
+              />
+
+              {/* Decorative elements */}
+              <div className="absolute -top-4 -right-4 w-12 h-12 rounded-full bg-sunshine animate-pulse"></div>
+              <div className="absolute -bottom-4 -left-4 w-8 h-8 rounded-full bg-mint animate-float"></div>
+            </div>
+
+            <div className="space-y-6">
+              <div>
+                {release.is_featured && (
+                  <Badge className="bg-primary text-primary-foreground mb-3">
+                    Featured
+                  </Badge>
+                )}
+                <h1 className="text-4xl font-bold text-primary">
+                  {release.title}
+                </h1>
+                <p className="text-foreground/80 mt-2">
+                  Released on{" "}
+                  {new Date(release.release_date).toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {release.artists &&
+                  release.artists.map((artist: any) => (
+                    <Link
+                      key={artist.id?.id}
+                      href={`/artists/${artist.slug?.slug}`}
+                    >
+                      <Badge
+                        variant="outline"
+                        className="border-primary text-primary hover:bg-primary/10 cursor-pointer"
+                      >
+                        {artist.name?.name}
+                      </Badge>
+                    </Link>
+                  ))}
+              </div>
+
+              <div className="prose prose-invert max-w-none">
+                <p className="text-foreground/80">
+                  {release.description || "No description available."}
+                </p>
+              </div>
+
+              <div className="pt-4">
+                <p className="text-sm text-foreground/70 mb-2">Available on:</p>
+                <div className="flex flex-wrap gap-3">
+                  {release.spotify_url && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-primary text-primary hover:bg-primary/10"
+                      asChild
+                    >
+                      <Link
+                        href={release.spotify_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <svg
+                          className="h-4 w-4 mr-2"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.36.12-.78-.12-.9-.48-.12-.36.12-.78.48-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.48.66.36 1.021zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.24 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+                        </svg>
+                        Spotify
+                      </Link>
+                    </Button>
+                  )}
+                  {release.apple_music_url && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-primary text-primary hover:bg-primary/10"
+                      asChild
+                    >
+                      <Link
+                        href={release.apple_music_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <svg
+                          className="h-4 w-4 mr-2"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M11.4 0.012C5.11 0.012 0 5.122 0 11.412C0 17.702 5.11 22.812 11.4 22.812C17.69 22.812 22.8 17.702 22.8 11.412C22.8 5.122 17.69 0.012 11.4 0.012ZM8.892 15.236C8.892 15.422 8.765 15.549 8.579 15.549C8.393 15.549 8.266 15.422 8.266 15.236V7.588C8.266 7.402 8.393 7.275 8.579 7.275C8.765 7.275 8.892 7.402 8.892 7.588V15.236ZM12.652 15.236C12.652 15.422 12.525 15.549 12.339 15.549C12.153 15.549 12.026 15.422 12.026 15.236V7.588C12.026 7.402 12.153 7.275 12.339 7.275C12.525 7.275 12.652 7.402 12.652 7.588V15.236ZM16.412 15.236C16.412 15.422 16.285 15.549 16.099 15.549C15.913 15.549 15.786 15.422 15.786 15.236V7.588C15.786 7.402 15.913 7.275 16.099 7.275C16.285 7.275 16.412 7.402 16.412 7.588V15.236Z" />
+                        </svg>
+                        Apple Music
+                      </Link>
+                    </Button>
+                  )}
+                  {release.soundcloud_url && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-primary text-primary hover:bg-primary/10"
+                      asChild
+                    >
+                      <Link
+                        href={release.soundcloud_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <svg
+                          className="h-4 w-4 mr-2"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M1.175 12.225c-.051 1.351-.051 2.742-.051 4.133 0 .281.051.634.051.886.051.354.102.634.153.92.204 1.257.561 2.241 1.073 2.978.561.788 1.225 1.334 2.143 1.675 1.327.493 3.061.493 4.388.493h.561c.306 0 .614.051.92.051 1.557.051 3.113.051 4.67.051 1.557 0 3.113 0 4.67-.051.307 0 .614-.051.92-.051h.561c1.327 0 3.061 0 4.388-.493.918-.341 1.582-.886 2.143-1.675.512-.737.87-1.721 1.073-2.978.051-.286.102-.567.153-.92.051-.252.051-.605.051-.886 0-1.391 0-2.783-.051-4.133 0-1.351 0-2.742.051-4.133 0-.281-.051-.634-.051-.886-.051-.354-.102-.634-.153-.92-.204-1.257-.561-2.241-1.073-2.978-.561-.788-1.225-1.334-2.143-1.675-1.327-.493-3.061-.493-4.388-.493h-.561c-.306 0-.614-.051-.92-.051-1.557-.051-3.113-.051-4.67-.051-1.557 0-3.113 0-4.67.051-.307 0-.614.051-.92.051h-.561c-1.327 0-3.061 0-4.388.493-.918.341-1.582.886-2.143 1.675-.512.737-.87 1.721-1.073 2.978-.051.286-.102.567-.153.92-.051.252-.051.605-.051.886 0 1.391 0 2.783.051 4.133zm2.245-6.374c.051-.788.102-1.421.153-1.879.204-1.13.561-1.879 1.073-2.371.307-.281.614-.493.92-.629.409-.204.87-.307 1.43-.307h.256c.461 0 .87.051 1.379.051C9.16 1.034 9.878 1.034 10.598 1.034c.92 0 1.84.051 2.709.051.511 0 1.022 0 1.481-.051.511-.051.971-.051 1.378-.051h.256c.561 0 1.022.102 1.43.307.307.136.614.35.92.629.512.493.87 1.242 1.073 2.371.051.46.102 1.092.153 1.879.051.788.051 1.675.051 2.576 0 .907 0 1.742-.051 2.576-.051.788-.102 1.421-.153 1.879-.204 1.13-.561 1.879-1.073 2.371-.307.281-.614.493-.92.629-.409.204-.87.307-1.43.307h-.256c-.461 0-.87-.051-1.378-.051-.46 0-1.023-.051-1.482-.051-.869 0-1.788-.051-2.709-.051-.92 0-1.788.051-2.658.051-.511 0-1.022 0-1.481.051-.511.051-.97.051-1.379.051h-.256c-.561 0-1.022-.102-1.43-.307-.307-.136-.614-.35-.92-.629-.512-.493-.87-1.242-1.073-2.371-.051-.46-.102-1.092-.153-1.879-.051-.788-.051-1.675-.051-2.576 0-.901.051-1.788.051-2.576zm5.867 7.425c.051-.46.051-.921.051-1.382 0-.512 0-1.023-.051-1.483-.051-.255-.153-.51-.307-.714-.307-.461-.768-.716-1.379-.716-.614 0-1.073.255-1.38.716-.153.204-.255.459-.306.714-.052.46-.052.971-.052 1.483 0 .46 0 .921.052 1.382.051.254.153.51.306.714.307.46.768.715 1.38.715.611 0 1.072-.255 1.379-.715.154-.204.256-.46.307-.714zm1.43-2.396c.051.46.051.971.051 1.483 0 .46 0 .921-.051 1.382-.102.715-.307 1.278-.665 1.738-.614.767-1.481 1.14-2.555 1.14-1.073 0-1.942-.373-2.556-1.14-.358-.46-.562-1.023-.664-1.738-.051-.46-.051-.921-.051-1.382 0-.512 0-1.023.051-1.483.102-.714.307-1.277.664-1.737.614-.768 1.483-1.141 2.556-1.141 1.074 0 1.941.373 2.555 1.141.358.46.563 1.023.665 1.737zm1.379-2.345c.306 0 .511-.204.511-.46 0-.255-.205-.459-.511-.459-.307 0-.512.204-.512.459 0 .256.205.46.512.46zm-1.277.868c.102-.46.307-.817.614-1.141.409-.374.92-.561 1.532-.561.614 0 1.125.187 1.533.561.307.324.512.681.614 1.141.051.255.051.561.051.868 0 .306 0 .612-.051.868-.102.46-.307.817-.614 1.14-.408.373-.919.56-1.533.56-.613 0-1.123-.187-1.532-.56-.307-.323-.512-.68-.614-1.14-.051-.256-.051-.562-.051-.868 0-.307 0-.613.051-.868zm.971-.817c-.204.255-.307.562-.358.919-.051.204-.051.46-.051.766 0 .307 0 .563.051.768.051.357.154.663.358.919.205.255.461.373.817.373.358 0 .614-.118.818-.373.204-.256.307-.562.358-.919.051-.205.051-.461.051-.768 0-.306 0-.562-.051-.766-.051-.357-.154-.664-.358-.919-.204-.255-.46-.374-.818-.374-.356 0-.612.119-.817.374z" />
+                        </svg>
+                        SoundCloud
+                      </Link>
+                    </Button>
+                  )}
+                  {release.beatport_url && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-primary text-primary hover:bg-primary/10"
+                      asChild
+                    >
+                      <Link
+                        href={release.beatport_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <svg
+                          className="h-4 w-4 mr-2"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                        >
+                          <path d="M2.813 0C1.256 0 0 1.256 0 2.813v18.374C0 22.744 1.256 24 2.813 24h18.374C22.744 24 24 22.744 24 21.187V2.813C24 1.256 22.744 0 21.187 0H2.813zm11.89 7.031c.624 0 1.235.086 1.826.26.591.173 1.13.418 1.615.735a5.277 5.277 0 0 1 1.328 1.162c.371.46.67.975.896 1.543.226.568.339 1.177.339 1.826 0 .65-.113 1.256-.339 1.82a5.108 5.108 0 0 1-.896 1.543 5.277 5.277 0 0 1-1.328 1.162c-.485.317-1.024.562-1.615.735-.591.173-1.202.26-1.826.26-.624 0-1.235-.087-1.826-.26a6.453 6.453 0 0 1-1.615-.735 5.277 5.277 0 0 1-1.328-1.162 5.108 5.108 0 0 1-.896-1.543c-.226-.564-.339-1.17-.339-1.82 0-.65.113-1.258.339-1.826.226-.568.525-1.083.896-1.543a5.277 5.277 0 0 1 1.328-1.162c.485-.317 1.024-.562 1.615-.735.591-.174 1.202-.26 1.826-.26zm-7.5.293v8.75h1.875v-8.75H7.203zm7.5 1.582c-.45 0-.885.067-1.303.198a4.381 4.381 0 0 0-1.152.552c-.347.234-.658.51-.932.826-.274.317-.496.67-.667 1.058-.17.389-.256.802-.256 1.24 0 .437.085.85.256 1.24.17.388.393.74.667 1.057.274.317.585.592.932.826.347.235.734.417 1.152.552.418.131.853.198 1.303.198.45 0 .885-.067 1.303-.198a4.381 4.381 0 0 0 1.152-.552c.347-.234.658-.51.932-.826.274-.317.496-.67.667-1.058.17-.389.256-.802.256-1.24 0-.437-.085-.85-.256-1.24-.17-.388-.393-.74-.667-1.057-.274-.317-.585-.592-.932-.826a4.381 4.381 0 0 0-1.152-.552 4.696 4.696 0 0 0-1.303-.198z" />
+                        </svg>
+                        Beatport
+                      </Link>
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-4 pt-4">
+                <Button
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2"
+                  asChild
+                >
+                  <Link
+                    href={release.spotify_url || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Play className="h-4 w-4" />
+                    Listen Now
+                  </Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {playerTracks.length > 0 && (
+            <div className="mt-12">
+              <h2 className="text-2xl font-bold mb-6 text-primary">
+                Preview Tracks
+              </h2>
+              <MusicPlayer tracks={playerTracks} />
+            </div>
+          )}
+
+          {/* Related releases section could go here */}
+        </div>
+      </main>
+
+      {/* Footer would go here */}
+    </div>
+  );
+}
