@@ -57,7 +57,7 @@ export default async function Home() {
           <div className="absolute top-1/3 right-1/4 w-16 h-16 bg-sunshine rounded-full opacity-40 animate-pulse"></div>
 
           {/* SAGRA Title - Absolute positioned */}
-          <div className="absolute top-0 left-0 right-0 p-[10px] text-center z-20">
+          <div className="absolute top-12 left-0 right-0 p-[10px] text-center z-20">
             <div className="text-5xl md:text-7xl font-extrabold tracking-tighter text-[#FC7240]">
               SAGRA
             </div>
@@ -66,7 +66,7 @@ export default async function Home() {
           <div className="container relative z-10">
             <div className="max-w-3xl mx-auto text-center">
               <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-6 text-primary font-merriweather">
-                Producing joyful music and events since 2024.
+                Producing joyful music and events worlwide.
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-[#FC7240]">
                 Discover the freshest electronic music from our roster of
