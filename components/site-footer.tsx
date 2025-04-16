@@ -24,7 +24,83 @@ export function SiteFooter() {
             <p className="text-sm text-gray-600">
               Producing joyful music and events since 2024.
             </p>
-            <SocialLinks />
+            <div className="flex space-x-4">
+              <Link
+                href="https://fr.ra.co/promoters/158687"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:opacity-80 transition-opacity"
+              >
+                <span className="sr-only">Resident Advisor</span>
+                <Image
+                  src="/ico/resident advisor.png"
+                  alt="Resident Advisor Logo"
+                  width={24}
+                  height={24}
+                  className="h-6 w-6 rounded-full"
+                />
+              </Link>
+              <Link
+                href="https://soundcloud.com/sagra_music"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:opacity-80 transition-opacity"
+              >
+                <span className="sr-only">SoundCloud</span>
+                <Image
+                  src="/ico/soundlcoud.png"
+                  alt="SoundCloud Logo"
+                  width={24}
+                  height={24}
+                  className="h-6 w-6 rounded-full"
+                />
+              </Link>
+              <Link
+                href="https://shotgun.live/fr/venues/sagra"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:opacity-80 transition-opacity"
+              >
+                <span className="sr-only">Shotgun</span>
+                <Image
+                  src="/ico/shotgun.png"
+                  alt="Shotgun Logo"
+                  width={24}
+                  height={24}
+                  className="h-6 w-6 rounded-full"
+                />
+              </Link>
+              <Link
+                href="https://www.instagram.com/sagra_music/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:opacity-80 transition-opacity"
+              >
+                <span className="sr-only">Instagram</span>
+                <Image
+                  src="/ico/insta.png"
+                  alt="Instagram Logo"
+                  width={24}
+                  height={24}
+                  className="h-6 w-6 rounded-full"
+                />
+              </Link>
+              <Link
+                href="https://www.youtube.com/@sagra_music"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:opacity-80 transition-opacity"
+              >
+                <span className="sr-only">YouTube</span>
+                <Image
+                  src="/ico/youtube.png"
+                  alt="YouTube Logo"
+                  width={24}
+                  height={24}
+                  className="h-6 w-6 rounded-full"
+                />
+              </Link>
+            </div>
           </div>
           <div>
             <h3 className="font-semibold mb-4">Quick Links</h3>

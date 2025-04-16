@@ -18,7 +18,10 @@ export function SoundCloudEmbed({
   visual = true,
 }: SoundCloudEmbedProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const embedUrl = `https://w.soundcloud.com/player/?url=https%3A//api.soundcloud.com/tracks/${trackId}&color=%23${color}&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=${visual}`;
+  const trackWebUrl = "https://soundcloud.com/faridabadymusic/the-heat";
+  const embedUrl = `https://w.soundcloud.com/player/?url=${encodeURIComponent(
+    trackWebUrl
+  )}&color=%23${color}&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=${visual}`;
 
   return (
     <Card className="overflow-hidden bg-white shadow-md">

@@ -61,7 +61,7 @@ export default async function Home() {
               <h1 className="text-5xl md:text-7xl font-extrabold tracking-tighter mb-6 text-primary">
                 Producing joyful music and events since 2024.
               </h1>
-              <p className="text-xl md:text-2xl mb-8 text-foreground">
+              <p className="text-xl md:text-2xl mb-8 text-[#FC7240]">
                 Discover the freshest electronic music from our roster of
                 innovative artists and join us for the next event.
               </p>
@@ -181,8 +181,8 @@ export default async function Home() {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <MusicEmbed
-                title="Sagra Music Playlist"
-                embedUrl="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M"
+                title="Koko - Farida Bady"
+                embedUrl="https://open.spotify.com/embed/album/0uJPtuQOzBkh3MfY1Flj4K?utm_source=generator"
               />
               <SoundCloudEmbed />
             </div>

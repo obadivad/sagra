@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     siteName: "Sagra Music",
     images: [
       {
-        url: "https://sagra-xi.vercel.app/metaSEO.png",
+        url: "https://bnhttkxabqsolqogtxuh.supabase.co/storage/v1/object/public/images//metaSEO.png",
         width: 1200,
         height: 630,
         alt: "Sagra Music Logo and DJ setup illustration",
@@ -42,7 +42,9 @@ export const metadata: Metadata = {
     title: "Sagra Music - Joyful electronic Record Label",
     description:
       "Discover Sagra Music, a record label dedicated to releasing joyful electronic music.",
-    images: ["https://sagra-xi.vercel.app/metaSEO.png"],
+    images: [
+      "https://bnhttkxabqsolqogtxuh.supabase.co/storage/v1/object/public/images//metaSEO.png",
+    ],
   },
 };
 
