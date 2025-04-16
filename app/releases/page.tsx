@@ -13,7 +13,7 @@ export default async function ReleasesPage() {
   // Fetch all releases
   const { data: releases } = await supabase
     .from("releases")
-    .select("*, artists!artist_releases(name)")
+    .select("*, artists!artist_releases(name), spotify_url, soundcloud_url")
     .order("release_date", { ascending: false });
 
   return (

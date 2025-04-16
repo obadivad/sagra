@@ -280,17 +280,42 @@ export default async function ReleaseDetailPage({
                   </Link>
                 </Button>
               </div>
+
+              {/* Embedded players */}
+              <div className="mt-6">
+                {release.spotify_url && (
+                  <div className="mb-4">
+                    <iframe
+                      src={`https://open.spotify.com/embed/album/${
+                        release.spotify_url.split("/album/")[1]
+                      }`}
+                      width="100%"
+                      height="152"
+                      frameBorder="0"
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                      loading="lazy"
+                      className="rounded-lg"
+                    ></iframe>
+                  </div>
+                )}
+                {!release.spotify_url && release.soundcloud_url && (
+                  <div className="mb-4">
+                    <iframe
+                      width="100%"
+                      height="166"
+                      scrolling="no"
+                      frameBorder="no"
+                      allow="autoplay"
+                      src={`https://w.soundcloud.com/player/?url=${encodeURIComponent(
+                        release.soundcloud_url
+                      )}&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true`}
+                      className="rounded-lg"
+                    ></iframe>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-
-          {playerTracks.length > 0 && (
-            <div className="mt-12">
-              <h2 className="text-2xl font-bold mb-6 text-primary">
-                Preview Tracks
-              </h2>
-              <MusicPlayer tracks={playerTracks} />
-            </div>
-          )}
 
           {/* Related releases section could go here */}
         </div>
